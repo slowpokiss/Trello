@@ -3,55 +3,60 @@ export default class AddCard {
     this.cardList = document.querySelectorAll(".card-list");
     this.cards = document.querySelectorAll(".card");
 
-    window.addEventListener("beforeunload", () => {
-      this.formData = [];
-      this.update();
-      this.cardList.forEach((element, index) => {
-        this.formData.push({ element: element.innerHTML, index });
-      });
+    this.init();
+  }
 
-      localStorage.setItem("formData", JSON.stringify(this.formData));
-    });
+  init() {
+    // window.addEventListener("beforeunload", () => {
+    //   this.formData = [];
+    //   this.update();
+    //   this.cardList.forEach((element, index) => {
+    //     this.formData.push({ element: element.innerHTML, index });
+    //   });
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const json = localStorage.getItem("formData");
+    //   localStorage.setItem("formData", JSON.stringify(this.formData));
+    // });
 
-      let formData;
-      try {
-        formData = JSON.parse(json);
-      } catch (error) {
-        console.log(error);
-      }
+    // document.addEventListener("DOMContentLoaded", () => {
+    //   const json = localStorage.getItem("formData");
 
-      if (formData) {
-        this.updatePage(formData);
-        this.addGrabbing();
-      }
-    });
-    this.addGrabbing();
+    //   let formData;
+    //   try {
+    //     formData = JSON.parse(json);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
 
-    this.addBtn = document.querySelectorAll(".add-card");
+    //   if (formData) {
+    //     this.updatePage(formData);
+    //     this.addGrabbing();
+    //   }
+    // });
+
     this.cardList.forEach((el) => {
       el.addEventListener("click", (ev) => {
         ev.preventDefault();
         if (ev.target.classList[0] === "card-del-btn") {
-          this.removeElem(ev.target.parentElement);
+          ev.target.closest(".card").remove();
         }
       });
     });
 
+    this.addBtn = document.querySelectorAll(".add-card");
     this.addBtn.forEach((el, ind) => {
       el.addEventListener("click", (ev) => {
         ev.preventDefault();
         const curr = el.parentElement.querySelector(".add-form-field");
         if (!curr) {
-          console.log(el);
+          console.log(this);
           this.addForm(el.parentElement, ind);
         } else {
           this.removeElem(curr);
         }
       });
     });
+
+    this.addGrabbing();
   }
 
   updatePage(data) {
@@ -78,11 +83,16 @@ export default class AddCard {
       this.removeElem(form);
     });
 
+    form.querySelector(".add-input").value = '1321321321321'
     form.querySelector(".add-form").addEventListener("submit", (ev) => {
       ev.preventDefault();
-      this.addCard(form.querySelector(".add-input").value, index);
-      form.querySelector(".add-input").value = "";
-      this.removeElem(form);
+      const formInput = form.querySelector(".add-input")
+      if (formInput.value != '') {
+        this.addCard(formInput.value, index);
+        form.querySelector(".add-input").value = "";
+        this.removeElem(form);
+      }
+      
     });
   }
 
@@ -108,34 +118,68 @@ export default class AddCard {
   }
 
   addGrabbing() {
-    this.update();
     let actualElem;
-    const onMouseOver = (ev) => {
-      actualElem.style.top = ev.clientY + "px";
-      actualElem.style.left = ev.clientX + "px";
-    };
+    let actualElemPosition, actualTop, actualLeft;
 
-    const onMouseUP = (ev) => {
-      const targetElem = ev.target;
+    document.addEventListener("mousedown", (ev) => {
+      ev.preventDefault();
+      if (actualElem) {
+        return;
+      }
+      actualElem = ev.target.closest(".card");
+      if (!actualElem || ev.target.classList[0] === "card-del-btn") {
+        return;
+      } else {
+        actualElem.classList.add("dragged");
+        // actualElem.style.top = '';
+        // actualElem.style.left = '';
 
-      targetElem.parentElement.insertBefore(actualElem, targetElem);
+        actualElemPosition = actualElem.getBoundingClientRect()
+        actualTop = ev.clientY - actualElemPosition.top;
+        actualLeft = ev.clientX - actualElemPosition.left;
+        actualElem.style.top = actualTop;
+        actualElem.style.left = actualLeft;
+      }
+    });
+
+    document.addEventListener("mouseup", (ev) => {
+      ev.preventDefault();
+
+      if (!actualElem) {
+        return;
+      }
+      
+      const x = ev.pageX;
+      const y = ev.pageY;
+    
+      //const targetElem = document.elementFromPoint(x, y);
+      const targetElem = ev.target
+
+      if (targetElem.classList.contains("card")) {
+        let list = targetElem.closest(".card-list");
+        list.insertBefore(actualElem, targetElem);
+      }
+      if (targetElem.classList[0] === "card-list") {
+        targetElem.appendChild(actualElem);
+      }
+
+      actualElem.style.top = '';
+      actualElem.style.left = '';
+      actualElemPosition = undefined;
+      actualTop = undefined;
+      actualLeft = undefined;
       actualElem.classList.remove("dragged");
       actualElem = undefined;
-      document.documentElement.removeEventListener("mouseup", onMouseUP);
-      document.documentElement.removeEventListener("mouseover", onMouseOver);
-    };
+    });
 
-    this.cards.forEach((el) => {
-      el.addEventListener("mousedown", (ev) => {
-        ev.preventDefault();
+    document.addEventListener("mousemove", (ev) => {
+      ev.preventDefault();
+      if (!actualElem) {
+        return;
+      }
 
-        if (ev.target.classList[0] === "card") {
-          actualElem = ev.target;
-          actualElem.classList.add("dragged");
-          document.documentElement.addEventListener("mouseup", onMouseUP);
-          document.documentElement.addEventListener("mouseover", onMouseOver);
-        }
-      });
+      actualElem.style.top = ev.clientY - actualTop + "px";
+      actualElem.style.left = ev.clientX - actualLeft + "px";
     });
   }
 }

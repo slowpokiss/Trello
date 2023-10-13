@@ -43,6 +43,10 @@
     list-style-type: none;
 }
 
+li.card-ghost {
+    background-color: #ff0000;
+}
+
 .card {
     display: flex;
     flex-direction: row;
@@ -50,7 +54,6 @@
     justify-content: space-between;
     user-select: none;
     background-color: #fff;
-    /* position: relative; */
     list-style-type: none;
     width: 100%;
     padding: 15px;
@@ -61,7 +64,7 @@
 
 .card.dragged {
     cursor: grabbing;
-    width: 250px;
+    width: 350px;
     position: absolute;
     z-index: 99;
 }
@@ -113,7 +116,6 @@
     padding: 7px;
     border-radius: 5px;
 }
-
 
 .add-btn {
     cursor: pointer;
