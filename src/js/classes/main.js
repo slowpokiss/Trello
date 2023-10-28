@@ -119,67 +119,65 @@ export default class AddCard {
 
   addGrabbing() {
     let actualElem;
-    let actualElemPosition, actualTop, actualLeft;
 
-    document.addEventListener("mousedown", (ev) => {
-      ev.preventDefault();
-      if (actualElem) {
-        return;
-      }
-      actualElem = ev.target.closest(".card");
-      if (!actualElem || ev.target.classList[0] === "card-del-btn") {
-        return;
-      } else {
+    this.MouseDownCb = (ev) => {
+      if (ev.target.classList.contains('card') && !ev.target.classList.contains("card-del-btn")) {
+        actualElem = ev.target.closest('.card');
+        this.shiftX = ev.offsetX;
+        this.shiftY = ev.offsetY;
+        
+        actualElem.style = `
+				left: ${ev.pageX - this.shiftX}px;
+				top: ${ev.pageY - this.shiftY}px;
+			  `
         actualElem.classList.add("dragged");
-        // actualElem.style.top = '';
-        // actualElem.style.left = '';
-
-        actualElemPosition = actualElem.getBoundingClientRect()
-        actualTop = ev.clientY - actualElemPosition.top;
-        actualLeft = ev.clientX - actualElemPosition.left;
-        actualElem.style.top = actualTop;
-        actualElem.style.left = actualLeft;
+      } else {
+        return
       }
-    });
+    }
 
-    document.addEventListener("mouseup", (ev) => {
+    this.MouseUpCb = (ev) => {
       ev.preventDefault();
-
+      ev.stopPropagation();
       if (!actualElem) {
         return;
       }
       
-      const x = ev.pageX;
-      const y = ev.pageY;
-    
-      //const targetElem = document.elementFromPoint(x, y);
-      const targetElem = ev.target
-
+      const x1 = parseFloat(actualElem.style.left)
+      const y1 = parseFloat(actualElem.style.top)
+      const targetElem = document.elementFromPoint(x1, y1);
+      
       if (targetElem.classList.contains("card")) {
         let list = targetElem.closest(".card-list");
         list.insertBefore(actualElem, targetElem);
       }
-      if (targetElem.classList[0] === "card-list") {
+      if (targetElem.classList.contains("card-list")) {
         targetElem.appendChild(actualElem);
       }
 
       actualElem.style.top = '';
       actualElem.style.left = '';
-      actualElemPosition = undefined;
-      actualTop = undefined;
-      actualLeft = undefined;
+      this.shiftX = null;
+      this.shiftY = null;
       actualElem.classList.remove("dragged");
       actualElem = undefined;
-    });
+    }
 
-    document.addEventListener("mousemove", (ev) => {
-      ev.preventDefault();
+    
+    this.MouseMoveCb = (ev) => {
+      ev.stopPropagation();
       if (!actualElem) {
         return;
       }
+      console.log(ev.target)
+      actualElem.style.top = ev.pageY - this.shiftY + "px";
+      actualElem.style.left = ev.pageX - this.shiftX + "px";
+    }
 
-      actualElem.style.top = ev.clientY - actualTop + "px";
-      actualElem.style.left = ev.clientX - actualLeft + "px";
-    });
+    document.addEventListener("mousedown", this.MouseDownCb);
+    document.addEventListener("mouseup", this.MouseUpCb);
+    document.addEventListener("mousemove", this.MouseMoveCb);
   }
+
+
 }

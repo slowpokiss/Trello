@@ -1,3 +1,3 @@
-import AddCard from "./classes/addCard";
+import Main from "./classes/main";
 
-const a = new AddCard();
+const a = new Main();

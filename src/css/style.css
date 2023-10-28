@@ -43,10 +43,6 @@
     list-style-type: none;
 }
 
-li.card-ghost {
-    background-color: #ff0000;
-}
-
 .card {
     display: flex;
     flex-direction: row;
@@ -66,7 +62,7 @@ li.card-ghost {
     cursor: grabbing;
     width: 350px;
     position: absolute;
-    z-index: 99;
+    /* z-index: 99; */
 }
 
 .card-del-btn {
